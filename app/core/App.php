@@ -9,7 +9,7 @@ namespace app\core;
 
 class App{
 
-	private $controller = 'app\\controllers\\Client'; //set a default value for the controller
+	private $controller = 'app\\controllers\\WebClient'; //set a default value for the controller
 	private $method = 'login';
 	private $params = [];
 

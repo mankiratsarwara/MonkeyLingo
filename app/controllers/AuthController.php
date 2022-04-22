@@ -19,43 +19,59 @@ class AuthController extends \app\core\Controller
         // Seperating bearer and the API Key.
         $elements = explode(" ",$authorization);
 
-        // Getting the API Key.
-        $apiKey = $elements[1];
-
         // Getting the body of the request.
         $request_body = file_get_contents("php://input");
 
         // Decoding the body.
         $request_body = json_decode($request_body, true);
 
-        //print_r($request_body);
-        
-        // Extracting the client's ID.
-        $clientID = $request_body['clientID'];
+        // Checking if client has sent the token or the API Key.
+        if(!isset($request_body['license_number'])){
+            // Checking the token starts here.
+             $token = $elements[2];
 
-        // Extracting the client's license
-        $licenseNumber = $request_body['licenseNumber'];
-        
-        // Getting the Client via the ID.
-        $client = new \app\models\Client();
-        $client = $client->get($clientID);
-        
-        // Checking if client exists.
+             try{
+                // Decoding the token.
+                $token = JWT::decode($token, new Key("key",'HS256'));
+
+                // Response
+                echo "HTTP/1.1 200 OK";
+
+             } catch(\Exception $e){
+                // If the token is invalid, return an error.
+                echo "HTTP/1.1 401 INVALID TOKEN.";
+             }
+        }
+        else{
+            // Checking the API Key and license number starts here.
+            $api_key = $elements[2];
+
+            // Extracting the client's username.
+            $username = $request_body['username'];
+
+            // Extracting the client's license number.
+            $license_number = $request_body['license_number'];
+
+            // Getting the Client via the username.
+            $client = new \app\models\Client();
+            $client = $client->get($username);
+
+            // Checking if client exists.
         if ($client == null){
             echo "HTTP/1.1 404 CLIENT DOES NOT EXIST.";
         }
         else{
             // Checking if API key corresponds to the client.
-            if($apiKey != $client->apiKey){
+            if($api_key != $client->api_key){
                 echo "HTTP/1.1 401 INVALID API KEY.";
             }
             else{
                 // Checking if license corresponds to the client.
-                if($licenseNumber != $client->licenseNumber){
+                if($license_number != $client->license_number){
                     echo "HTTP/1.1 401 INVALID LICENSE NUMBER.";
                 }
                 // Checking if license is expired.
-                else if(date('Y-m-d H:i:s a', time()) > $client->licenseEndDate){
+                else if(date('Y-m-d H:i:s a', time()) > $client->license_end_date){
                     echo "HTTP/1.1 401 EXPIRED LICENSE.";
                 }
                 else{
@@ -75,9 +91,10 @@ class AuthController extends \app\core\Controller
 
                     $jwt = JWT::encode($payload, $key, 'HS256');
                     header('WWW-Authenticate: Bearer '.$jwt);
+                    echo "HTTP/1.1 200 OK";
+                    }
                 }
             }
         }
-
-	}
+    }
 }

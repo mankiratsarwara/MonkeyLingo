@@ -10,6 +10,11 @@ class WebService extends \app\core\Controller
 	// private $uploadedFolder = 'uploads/uploaded/';
 	// private $convertedFolder = 'uploads/converted/';
 
+        public function detect(){
+                
+        }
+
+
 	// public function index()
 	// {
         //         // Reading the request payload sent from the Client POST request.

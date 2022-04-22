@@ -4,8 +4,9 @@ namespace app\controllers;
 require dirname(dirname(__DIR__)).'\vendor\autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use GuzzleHttp\Client;
 
-class Client extends \app\core\Controller
+class WebClient extends \app\core\Controller
 {
 
 	public function login()
@@ -95,12 +96,47 @@ class Client extends \app\core\Controller
             $detect->original_string = $_POST['string'];
             $detect->detect_data = date('Y-m-d H:i:s');
 
-            // REQUEST TO API CODE HERE.
+            // Starting the authentication process.
+            $guzzleClient = new Client();
+            $response = "";
 
+            // Checking if client has a token.
+            if(!is_null($client->token)){
+                
+                // POST Request Authentication with the token.
+                $response = $guzzleClient->request('POST','http://localhost/AuthController/auth',[
+                    'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->token]
+                ]);
+            }
+            else{
 
-            $detect->detected_language = "English";
+                // POST Request Authentication without the token.
+                $post = [
+                    'username' => $client->username,
+                    'license_number' => $client->license_number
+                ];
+
+                $post = json_encode($post);
+    
+                $response = $guzzleClient->request('POST','http://localhost/AuthController/auth', [
+                    'headers' => ['content-type' => 'application/json', 'authorization' => 'Authorization: Bearer '.$client->api_key],
+                    'body' => $post
+                ]);
+
+                // Getting the response headers.
+                //print_r($response->getHeaders());
+
+                
+            }
+
+            // $res = json_decode($response->getBody()->getContents());
+
+            $res = $response->getBody()->getContents();
+            var_dump($res);
+
+            //$detect->detected_language = "hello";
             //$detect->insert();
-            $this->view('Client/detect',['client'=>$client, 'language'=>$detect->detected_language]);
+            //$this->view('Client/detect',['client'=>$client, 'language'=>$detect->detected_language]);
         }
         else{
             $client = new \app\models\Client();

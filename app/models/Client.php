@@ -10,6 +10,7 @@ class Client extends \app\core\Model{
 	public $license_number;
     public $license_start_date;
     public $license_end_date;
+	public $token;
 
     public function __construct(){
 		parent::__construct();
@@ -30,5 +31,11 @@ class Client extends \app\core\Model{
 		$STMT = self::$_connection->prepare($SQL);
 		$STMT->execute(['username'=>$this->username, 'first_name'=>$this->first_name, 'last_name'=>$this->last_name, 'password_hash'=>$this->password_hash, 
 						'api_key'=>$this->api_key, 'license_number'=>$this->license_number, 'license_end_date'=>date('Y-m-d H:i:s', strtotime('+6 month'))]);
+	}
+
+	public function setToken(){
+		$SQL = 'UPDATE client SET token = :token WHERE username = :username';
+		$STMT = self::$_connection->prepare($SQL);
+		$STMT->execute(['token'=>$this->token,'username'=>$this->username]);
 	}
 }
