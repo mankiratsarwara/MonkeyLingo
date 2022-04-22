@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 19, 2022 at 05:13 AM
+-- Generation Time: Apr 22, 2022 at 05:56 AM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 8.1.2
 
@@ -20,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `monkeylingo`
 --
+CREATE DATABASE IF NOT EXISTS `monkeylingo` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `monkeylingo`;
 
 -- --------------------------------------------------------
 
@@ -36,15 +38,16 @@ CREATE TABLE `client` (
   `api_key` text NOT NULL,
   `license_number` text NOT NULL,
   `license_start_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `license_end_date` timestamp NULL DEFAULT NULL
+  `license_end_date` timestamp NULL DEFAULT NULL,
+  `token` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `client`
 --
 
-INSERT INTO `client` (`username`, `first_name`, `last_name`, `password_hash`, `api_key`, `license_number`, `license_start_date`, `license_end_date`) VALUES
-('fet', 'Mankirat Singh', 'Sarwara', '$2y$10$Vzm9OPwH4Su64ijESYP2Je8pFcMoZzv8jTozd.E.l/9r.6vsdrurS', '625e074b9337a', '625e074b9337c', '2022-04-19 00:50:19', '2022-10-19 00:50:19');
+INSERT INTO `client` (`username`, `first_name`, `last_name`, `password_hash`, `api_key`, `license_number`, `license_start_date`, `license_end_date`, `token`) VALUES
+('fet', 'Mankirat Singh', 'Sarwara', '$2y$10$Vzm9OPwH4Su64ijESYP2Je8pFcMoZzv8jTozd.E.l/9r.6vsdrurS', '625e074b9337a', '625e074b9337c', '2022-04-19 00:50:19', '2022-10-19 00:50:19', NULL);
 
 -- --------------------------------------------------------
 
