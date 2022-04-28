@@ -24,7 +24,7 @@ class Translate extends \app\core\Model{
 	}
 
 	public function insert(){
-		$SQL = 'INSERT INTO client(username, original_string, converted_string, original_language, converted_language, translate_date, translate_completed_date) 
+		$SQL = 'INSERT INTO translate(username, original_string, converted_string, original_language, converted_language, translate_date, translate_completed_date) 
                 VALUES(:username, :original_string, :converted_string, :original_language, :converted_language, :translate_date, :translate_completed_date)';
 		$STMT = self::$_connection->prepare($SQL);
 		$STMT->execute([

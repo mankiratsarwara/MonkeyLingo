@@ -22,10 +22,10 @@ class Detect extends \app\core\Model{
 	}
 
 	public function insert(){
-		$SQL = 'INSERT INTO detect(username, original_string, detected_language, detect_date, detect_completed_date)) 
+		$SQL = 'INSERT INTO detect(username, original_string, detected_language, detect_date, detect_completed_date) 
 				VALUES (:username, :original_string, :detected_language, :detect_date, :detect_completed_date)';
 		$STMT = self::$_connection->prepare($SQL);
 		$STMT->execute(['username'=>$this->username, 'original_string'=>$this->original_string, 'detected_language'=>$this->detected_language, 
-                        'detect_date'=>$this->detect_date, 'detect_completed_date'=>date('Y-m-d H:i:s')]);
+                        'detect_date'=>$this->detect_date, 'detect_completed_date'=>$this->detect_completed_date]);
 	}
 }

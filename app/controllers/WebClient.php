@@ -93,7 +93,7 @@ class WebClient extends \app\core\Controller
             $detect = new \app\models\Detect();
             $detect->username = $client->username;
             $detect->original_string = $_POST['string'];
-            $detect->detect_data = date('Y-m-d H:i:s');
+            $detect->detect_date = date('Y-m-d H:i:s');
 
             // Authenticate the user.
             $this->sendAuthentication($client);
@@ -126,6 +126,12 @@ class WebClient extends \app\core\Controller
                 echo $response;
             }
             $languageName = $this->findLanguageCode($response->getBody()->getContents(), $languageResponse);
+
+            // Inserting the detected language into the database.
+            $detect->detected_language = $languageName;
+            $detect->detect_completed_date = date('Y-m-d H:i:s');
+            $detect->insert();
+
             $this->view('Client/detect', ['client' => $client, 'language' => $languageName, "original" => $detect->original_string]);
 
         }
@@ -159,7 +165,7 @@ class WebClient extends \app\core\Controller
             // Getting the languages before the page loads
             $languageResponse = $this->getLanguages($client);
 
-            // Request to WebService to detect the text.
+            // Request to WebService to translate the text.
             try{
 
                 $guzzleClient = new Client();
@@ -186,9 +192,14 @@ class WebClient extends \app\core\Controller
                 echo $response;
             }
 
+            // Inserting the translate data into the database.
+            $translate->converted_string = $response->getBody()->getContents();
+            $translate->insert();
+
+
             $this->view('Client/translate', ['client' => $client, "languages" => $languageResponse, 'ogLanguage' => $translate->original_language,
                 "convertedLanguage" => $translate->converted_language, "original" => $translate->original_string,
-                "translated" => $response->getBody()->getContents()]);
+                "translated" => $translate->converted_string]);
             
         }
         else{
