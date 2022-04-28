@@ -57,21 +57,42 @@
 						<td class="spacing">
 							<div style="width: fit-content;">
 								<select name="ogLanguage">
-									<option>English</option>
+									<?php
+									for ($i = 0; $i < count($data['languages']); $i++) {
+										if ($data['languages'][$i]["language"] == $data['ogLanguage']) {
+											echo "<option value='{$data['languages'][$i]['language']}' selected>" . $data['languages'][$i]["name"] . "</option>";
+										} else {
+											echo "<option value='{$data['languages'][$i]['language']}'>" . $data['languages'][$i]["name"] . "</option>";
+										}
+									}
+									?>
 								</select><br>
-								<textarea placeholder="Translate some text!" name='string' rows='10' cols='50'></textarea>
+								<textarea placeholder="Translate some text!" name='string' rows='10' cols='50'><?php
+								if (isset($data['original'])) {
+									echo $data['original'];
+								}
+								?></textarea>
 							</div>
 						</td>
 						<td class="spacing">
 							<div style="width: fit-content;">
 								<select name="convertedLanguage">
-									<option>English</option>
+									<?php
+									for ($i = 0; $i < count($data['languages']); $i++) {
+										if ($data['languages'][$i]["language"] == $data['convertedLanguage']) {
+											echo "<option value='{$data['languages'][$i]['language']}' selected>" . $data['languages'][$i]["name"] . "</option>";
+										} else {
+											echo "<option value='{$data['languages'][$i]['language']}'>" . $data['languages'][$i]["name"] . "</option>";
+										}
+									}
+									?>
 								</select><br>
 								<textarea placeholder="Translated text will appear here!" readonly name='translatedString' rows='10' cols='50'><?php
-								if (isset($data['translated'])) {
-									echo $data['translated'];
-								}
-								?></textarea>
+									if (isset($data['translated'])) {
+										echo $data['translated'];
+									}
+									?></textarea>
+							</div>
 						</td>
 					</tr>
 					<tr>

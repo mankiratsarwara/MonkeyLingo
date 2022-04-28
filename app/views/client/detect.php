@@ -54,7 +54,10 @@
 				echo '<h3>' . $data['error'] . '</h3>';
 			} ?>
 			<form action='' method='post'>
-				<textarea name="string" cols="50" rows="15" placeholder="Bonjour! Hola! Hi! Guten Tag!"></textarea> <br>
+				<textarea name="string" cols="50" rows="15" placeholder="Bonjour! Hola! Hi! Guten Tag!"><?php
+				if (isset($data['original'])) {
+					echo $data['original'];
+				} ?></textarea> <br>
 				<input class="login-register-button rainbow rainbow-5" type='submit' name='action' value='Detect' />
 			</form>
 		</div>

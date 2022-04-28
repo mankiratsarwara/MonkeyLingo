@@ -10,11 +10,15 @@ use Firebase\JWT\Key;
 
 class WebService extends \app\core\Controller
 {
-	// private $uploadedFolder = 'uploads/uploaded/';
-	// private $convertedFolder = 'uploads/converted/';
 
 	public static function detect()
 	{
+		// Getting the body of the request.
+		$request_body = file_get_contents("php://input");
+		header("content-type: application/json");
+		$request_body = json_decode($request_body, true);
+		$string = $request_body['string'];
+
 		$curl = curl_init();
 		$string = urlencode($string);
 
@@ -31,7 +35,7 @@ class WebService extends \app\core\Controller
 			CURLOPT_HTTPHEADER => [
 				"Accept-Encoding: application/gzip",
 				"X-RapidAPI-Host: google-translate1.p.rapidapi.com",
-				"X-RapidAPI-Key: e55b2a925cmshd11e65f5fc8389ap120889jsnc2b7bed1f83a",
+				"X-RapidAPI-Key: 48207c7bf1mshb1ee172e5e7d60cp11c2ddjsn4b336e0db6cf",
 				"content-type: application/x-www-form-urlencoded"
 			],
 		]);
@@ -44,7 +48,6 @@ class WebService extends \app\core\Controller
 		if ($err) {
 			echo "cURL Error #:" . $err;
 		} else {
-			echo $response;
 			$reponse = json_decode($response);
 			echo $reponse->data->detections[0][0]->language;
 		}
@@ -52,6 +55,14 @@ class WebService extends \app\core\Controller
 
 	public function translate()
 	{
+		// Getting the body of the request.
+		$request_body = file_get_contents("php://input");
+		header("content-type: application/json");
+		$request_body = json_decode($request_body, true);
+		$string = $request_body['original_string'];
+		$sourceLanguage = $request_body['original_language'];
+		$targetLanguage = $request_body['converted_language'];
+
 		$curl = curl_init();
 		$string = urlencode($string);
 		curl_setopt_array($curl, [
@@ -67,7 +78,7 @@ class WebService extends \app\core\Controller
 			CURLOPT_HTTPHEADER => [
 				"Accept-Encoding: application/gzip",
 				"X-RapidAPI-Host: google-translate1.p.rapidapi.com",
-				"X-RapidAPI-Key: e55b2a925cmshd11e65f5fc8389ap120889jsnc2b7bed1f83a",
+				"X-RapidAPI-Key: 48207c7bf1mshb1ee172e5e7d60cp11c2ddjsn4b336e0db6cf",
 				"content-type: application/x-www-form-urlencoded"
 			],
 		]);
@@ -86,8 +97,34 @@ class WebService extends \app\core\Controller
 		}
 	}
 
-	public function run()
-	{
-		$this->detect("Hello World");
+	public function getLanguages() {
+		$curl = curl_init();
+
+		curl_setopt_array($curl, [
+			CURLOPT_URL => "https://google-translate1.p.rapidapi.com/language/translate/v2/languages?target=en&model=nmt",
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "GET",
+			CURLOPT_HTTPHEADER => [
+				"Accept-Encoding: application/gzip",
+				"X-RapidAPI-Host: google-translate1.p.rapidapi.com",
+				"X-RapidAPI-Key: 48207c7bf1mshb1ee172e5e7d60cp11c2ddjsn4b336e0db6cf",
+			],
+		]);
+
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
+
+		curl_close($curl);
+
+		if ($err) {
+			echo "cURL Error #:" . $err;
+		} else {
+			echo $response;
+		}
 	}
 }

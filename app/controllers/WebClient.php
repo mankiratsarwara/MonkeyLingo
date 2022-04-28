@@ -98,6 +98,9 @@ class WebClient extends \app\core\Controller
             // Authenticate the user.
             $this->sendAuthentication($client);
 
+            // Getting the languages before the page loads
+            $languageResponse = $this->getLanguages($client);
+
             // Request to WebService to detect the text.
             try{
 
@@ -122,8 +125,8 @@ class WebClient extends \app\core\Controller
                 $response = $response->getBody()->getContents();
                 echo $response;
             }
-
-            print_r($response->getBody()->getContents());
+            $languageName = $this->findLanguageCode($response->getBody()->getContents(), $languageResponse);
+            $this->view('Client/detect', ['client' => $client, 'language' => $languageName, "original" => $detect->original_string]);
 
         }
         else{
@@ -153,6 +156,9 @@ class WebClient extends \app\core\Controller
             // Authenticate the user.
             $this->sendAuthentication($client);
 
+            // Getting the languages before the page loads
+            $languageResponse = $this->getLanguages($client);
+
             // Request to WebService to detect the text.
             try{
 
@@ -180,13 +186,17 @@ class WebClient extends \app\core\Controller
                 echo $response;
             }
 
-            print_r($response->getBody()->getContents());
+            $this->view('Client/translate', ['client' => $client, "languages" => $languageResponse, 'ogLanguage' => $translate->original_language,
+                "convertedLanguage" => $translate->converted_language, "original" => $translate->original_string,
+                "translated" => $response->getBody()->getContents()]);
             
         }
         else{
             $client = new \app\models\Client();
             $client = $client->get($_SESSION['username']);
-            $this->view('Client/translate', ['client'=>$client]);
+            // Getting the languages before the page loads
+            $languageResponse = $this->getLanguages($client);
+            $this->view('Client/translate', ['client'=>$client, "languages" => $languageResponse]);
         }
     }
 
@@ -243,6 +253,50 @@ class WebClient extends \app\core\Controller
             // Updating the client's token.
             $client->token = $token;
             $client->setToken();
+        }
+    }
+
+    public function getLanguages($client)
+    {
+        $response = "";
+
+        // Creating a new Detect instance and setting the username, text to be detected and the time of detection.
+        $detect = new \app\models\Detect();
+        $detect->username = $client->username;
+        $detect->detect_data = date('Y-m-d H:i:s');
+        try {
+
+            $guzzleClient = new Client();
+
+            // POST Request Body to Web Service Detect.
+            $body = [
+                'username' => $client->username,
+            ];
+
+            // JSON Encoding the body.
+            $body = json_encode($body);
+
+            $response = $guzzleClient->request('POST', 'http://localhost/WebService/getLanguages', [
+                'headers' => ['content-type' => 'application/json', 'Authorization' => 'Bearer ' . $client->token],
+                'body' => $body,
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $e) { // Catching any exceptions.
+            echo "Status code {$e->getResponse()->getStatusCode()} <br>";
+            $response = $response->getBody()->getContents();
+            echo $response;
+        }
+        $response = $response->getBody()->getContents();
+        $response = json_decode($response, true);
+
+        return $response["data"]["languages"];
+    }
+
+    public function findLanguageCode($languageCode, $array)
+    {
+        for ($i = 0; $i < count($array); $i++) {
+            if ($array[$i]["language"] == $languageCode) {
+                return $array[$i]["name"];
+            }
         }
     }
 }
