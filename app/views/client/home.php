@@ -9,10 +9,10 @@
 	<title>Home</title>
 </head>
 
-<body>
+<body style="background-image: linear-gradient(rgb(255 255 255 / 50%), rgb(0 0 0 / 50%)), url(\\media\/background.jpg); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">
 	<nav class="navbar navbar-light bg-light fixed-top">
 		<div class="container-fluid">
-			<a class="navbar-brand mx-auto" href="/Client/home" style="margin-left: 50px;"><img src="/media/monkey.png" style="height: 100px"></a></a>
+			<a class="navbar-brand mx-auto" href="/webclient/home" style="margin-left: 50px;"><img src="/media/monkey.png" style="height: 100px"></a></a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
 				<span class="navbar-toggler-icon"></span>
 			</button>
@@ -24,19 +24,19 @@
 				<div class="offcanvas-body">
 					<ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
 						<li class="nav-item">
-							<a class="nav-link active" aria-current="page" href="/Client/Home">Home</a>
+							<a class="nav-link active" aria-current="page" href="/webclient/Home">Home</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="/Client/about">About</a>
+							<a class="nav-link" href="/webclient/about">About</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="/Client/detect">Detect</a>
+							<a class="nav-link" href="/webclient/detect">Detect</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="/Client/translate">Translate</a>
+							<a class="nav-link" href="/webclient/translate">Translate</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href="/Client/logout">Logout</a>
+							<a class="nav-link" href="/webclient/logout">Logout</a>
 						</li>
 					</ul>
 				</div>

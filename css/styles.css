@@ -1,0 +1,56 @@
+h1 {
+    font-size: 5em;
+}
+
+h3 {
+    font-size: 3.5em;
+}
+
+form {
+    font-size: 2em;
+}
+
+a {
+    font-size: 2em;
+}
+
+input[type=submit] {
+    background: white;
+    padding: 5px;
+    border-radius: 50px;
+    padding-left: 50px;
+    padding-right: 50px;
+    transition: all .5s ease;
+}
+
+input[type=submit]:hover {
+    color: #ffffff;
+    background-color: #5a4836;
+}
+
+* {
+    font-family: 'Lora', serif;
+}
+
+.login-register-input {
+    padding: 10px;
+    font-size: 0.75em;
+    width: 400px;
+    padding: 10px;
+    font-size: 0.75em;
+    width: 400px;   
+}
+
+td.spacing {
+    padding: 20px!important;
+}
+
+textarea {
+    resize: none;
+    padding: 5px;
+}
+
+select {
+    margin-bottom: 10px;
+    padding: 5px;
+}

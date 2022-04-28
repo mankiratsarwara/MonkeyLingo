@@ -27,7 +27,7 @@ class WebClient extends \app\core\Controller
 
 				$username = new \app\models\Client(); // why we do this lmao.
 				$username = $username->get($_SESSION['username']); // why we do this lmao pt.2
-				header("Location:/Client/home");
+				header("Location:/WebClient/translate");
 			} else {
 				$this->view('Client/login', 'Wrong username and password combination!');
 			}
@@ -64,15 +64,9 @@ class WebClient extends \app\core\Controller
             $client->license_number = uniqid(); // Generating a unique license number
 			$client->password = $_POST['password'];
 			$client->insert();
-			header("location:/Client/login");
+			header("Location:/WebClient/login");
 		} else //1 present a form to the user
 			$this->view('Client/register');
-    }
-
-    public function home(){
-        $client = new \app\models\Client();
-        $client = $client->get($_SESSION['username']);
-        $this->view('Client/home', ['client'=>$client]);
     }
 
     public function about(){
@@ -104,7 +98,7 @@ class WebClient extends \app\core\Controller
             if(!is_null($client->token)){
                 
                 // POST Request Authentication with the token.
-                $response = $guzzleClient->request('POST','http://localhost/AuthController/auth',[
+                $response = $guzzleClient->request('POST','http://localhost/AuthController/auth/',[
                     'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->token]
                 ]);
             }
@@ -114,25 +108,40 @@ class WebClient extends \app\core\Controller
                 $post = [
                     'username' => $client->username,
                     'license_number' => $client->license_number
+                    // 'api_key' => $client->api_key
                 ];
-
+                // print_r($post);
                 $post = json_encode($post);
-    
-                $response = $guzzleClient->request('POST','http://localhost/AuthController/auth', [
-                    'headers' => ['content-type' => 'application/json', 'authorization' => 'Authorization: Bearer '.$client->api_key],
-                    'body' => $post
-                ]);
-
-                // Getting the response headers.
-                //print_r($response->getHeaders());
-
-                
+                // echo strval($post) . "this is string";
+                $response;
+                try {
+                    $response = $guzzleClient->request('POST', 'http://localhost/AuthController/auth', [
+                        'headers' => ['content-type' => 'application/json'],
+                        'body' => $post,
+                    ]);
+                } catch (\GuzzleHttp\Exception\ClientException $e) {
+                    echo $response;
+                    echo $response->getHeader('HTTP/1.1');
+                    echo "Status code {$e->getResponse()->getStatusCode()} <br>";
+                    echo $response->getHeader('WWWW-Authenticate');
+                    $response = $e->getResponse();
+                    $response = $response->getBody()->getContents();
+                    echo $response;
+                }
+                // $jwt = $response->getHeader('wwww-authenticate');
+                // $jwt = str_replace('Bearer ', '', $jwt[0]);
+                // echo 'something' . $jwt;
+                // echo "aodsifjaosdifj????";
+                // // Getting the response headers.
+                // // print_r($response->getHeaders());
+                // print_r($jwt);
+                // echo $responseBodyAsString;
             }
 
             // $res = json_decode($response->getBody()->getContents());
 
-            $res = $response->getBody()->getContents();
-            var_dump($res);
+            // $res = $response->getBody()->getContents();
+            // var_dump($res);
 
             //$detect->detected_language = "hello";
             //$detect->insert();
@@ -181,7 +190,7 @@ class WebClient extends \app\core\Controller
 
     public function logout(){
         session_destroy();
-        header("location:/Client/login");
+        header("Location:/WebClient/login");
     }
 
 }

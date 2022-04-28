@@ -49,7 +49,7 @@
 	$headers = headersToArray($headers);
 
 	//Extracting the token.
-	$authorization = $headers['WWW-Authenticate'];
+	$authorization = $headers['wwww-authenticate'];
 	$authorization = explode(" ", $authorization);
 	$token = $authorization[2];
 
