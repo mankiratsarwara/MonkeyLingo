@@ -14,7 +14,7 @@
 	<title>Detect</title>
 </head>
 
-<body>
+<body style="background-image: linear-gradient(rgb(255 255 255 / 50%), rgb(0 0 0 / 50%)), url(\\media\/background.jpg); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">
 	<nav class="navbar navbar-light bg-light fixed-top">
 		<div class="container-fluid">
 			<a class="navbar-brand mx-auto" href="/webclient/translate" style="margin-left: 50px;"><img src="/media/monkey.png" style="height: 100px"></a></a>
@@ -47,17 +47,17 @@
 	</nav>
 	<div class="main">
 		<div style="padding: 20px; margin-top: 150px; text-align: center; ">
-			<h1 class="welcome">Please enter some text below to detect</h1>
+			<h1 class="welcome">Please enter some text below to detect!</h1>
 			<?php if (isset($data['language'])) {
 				echo '<h3> Detected language: ' . $data['language'] . '</h3>';
 			} else if (isset($data['error'])) {
 				echo '<h3>' . $data['error'] . '</h3>';
 			} ?>
 			<form action='' method='post'>
-				<textarea name="string" cols="50" rows="15" placeholder="Bonjour! Hola! Hi! Guten Tag!"><?php
-				if (isset($data['original'])) {
-					echo $data['original'];
-				} ?></textarea> <br>
+				<textarea name="string" rows='10' cols='50' placeholder="Bonjour! Hola! Hi! Guten Tag!"><?php
+																										if (isset($data['original'])) {
+																											echo $data['original'];
+																										} ?></textarea> <br>
 				<input class="login-register-button rainbow rainbow-5" type='submit' name='action' value='Detect' />
 			</form>
 		</div>
