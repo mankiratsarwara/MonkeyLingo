@@ -1,80 +1,93 @@
 <?php
+
 namespace app\controllers;
 
-require dirname(dirname(__DIR__)).'\vendor\autoload.php';
+require dirname(dirname(__DIR__)) . '\vendor\autoload.php';
+
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+
 
 class WebService extends \app\core\Controller
 {
 	// private $uploadedFolder = 'uploads/uploaded/';
 	// private $convertedFolder = 'uploads/converted/';
 
-        public function detect(){
-                
-        }
+	public static function detect()
+	{
+		$curl = curl_init();
+		$string = urlencode($string);
 
+		curl_setopt_array($curl, [
+			CURLOPT_URL => "https://google-translate1.p.rapidapi.com/language/translate/v2/detect",
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "POST",
+			CURLOPT_POSTFIELDS => "q=$string",
+			CURLOPT_HTTPHEADER => [
+				"Accept-Encoding: application/gzip",
+				"X-RapidAPI-Host: google-translate1.p.rapidapi.com",
+				"X-RapidAPI-Key: e55b2a925cmshd11e65f5fc8389ap120889jsnc2b7bed1f83a",
+				"content-type: application/x-www-form-urlencoded"
+			],
+		]);
 
-	// public function index()
-	// {
-        //         // Reading the request payload sent from the Client POST request.
-        //         // Reads input stream when Apache loads the file.
-        //         $request_body = file_get_contents("php://input");
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
 
-        //         // Getting all the headers from the request.
-        //         $headers = apache_request_headers();
+		curl_close($curl);
 
-        //         try{
-                        // extracting the token from the autorization header.
-                        // $authorization = $headers['authorization'];
-                        // $authorization = explode(" ",$authorization);
-                        // $token = $authorization[1];
+		if ($err) {
+			echo "cURL Error #:" . $err;
+		} else {
+			echo $response;
+			$reponse = json_decode($response);
+			echo $reponse->data->detections[0][0]->language;
+		}
+	}
 
-                        // if($token == null){
-                        // echo "HTTP/1.1 401 UNAUTHORIZED.";     
-                        // }
-                        // else{
-                        //         // Decoding - Checking signature.
-                        //         $token = JWT::decode($token, new Key("random_key",'HS256'));
+	public function translate()
+	{
+		$curl = curl_init();
+		$string = urlencode($string);
+		curl_setopt_array($curl, [
+			CURLOPT_URL => "https://google-translate1.p.rapidapi.com/language/translate/v2",
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_ENCODING => "",
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 30,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => "POST",
+			CURLOPT_POSTFIELDS => "q=$string&target=$targetLanguage&source=$sourceLanguage",
+			CURLOPT_HTTPHEADER => [
+				"Accept-Encoding: application/gzip",
+				"X-RapidAPI-Host: google-translate1.p.rapidapi.com",
+				"X-RapidAPI-Key: e55b2a925cmshd11e65f5fc8389ap120889jsnc2b7bed1f83a",
+				"content-type: application/x-www-form-urlencoded"
+			],
+		]);
 
-                        //         // Decode the json-encoded data.
-                        //         $data = json_decode($request_body, true);
+		$response = curl_exec($curl);
+		$err = curl_error($curl);
 
-                        //         $filename = uniqid() . $data['targetFormat']; // Setting the filename.
-                        //         $filepath = $this->uploadedFolder . $filename; // Setting the location to save it.
+		curl_close($curl);
 
-                        //         // Seeting the client info based on the info received by the POST request.
-                        //         // $conversion = new \app\Models\VideoConversion();
-                        //         // $conversion->clientID = $data['clientID'];
-                        //         // $conversion->requestDate = date('Y-m-d H:i:s a', time());
-                        //         // $conversion->originalFormat = $data['originalFormat'];
-                        //         // $conversion->targetFormat = $data['targetFormat'];
-                        //         // $conversion->inputFile = $data['inputFilePath'];
+		if ($err) {
+			echo "cURL Error #:" . $err;
+		} else {
+			$response = json_decode($response, true);
+			// print_r($response);
+			echo $response['data']['translations'][0]['translatedText'];
+		}
+	}
 
-
-                        //         // Setting the name of the new converted file.
-                        //         $convertedFile = uniqid() . $conversion->targetFormat;
-
-                        //         // Setting the URL of the new converted file.
-                        //         $convertedFilepath = $this->convertedFolder . $convertedFile;
-
-                        //         // Setting and running the ffmpeg conversion command.
-                        //         $command = "ffmpeg -i $filepath $convertedFilepath";
-                        //         exec($command);
-
-                        //         // Setting the output file after the conversion has been done.
-                        //         $conversion->outputFile = $convertedFilepath;
-
-                        //         // Setting the data and time after the conversion has been done.
-                        //         $conversion->requestCompleteDate = date('Y-m-d H:i:s a', time());
-                                
-                        //         // Inserting a record of the conversion in the database.
-                        //         $conversion->insertVideoConversion();
-                //         //         echo "HTTP/1.1 200 OK.";
-                //         }
-                // }
-                // catch (\Exception $e){
-                //         echo "HTTP/1.1 401 UNAUTHORIZED.";
-        //         // }
-	// }
+	public function run()
+	{
+		$this->detect("Hello World");
+	}
 }
