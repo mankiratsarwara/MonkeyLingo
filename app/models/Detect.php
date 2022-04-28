@@ -1,7 +1,7 @@
 <?php
 namespace app\models;
 
-class Detect extends \app\core\Model{
+class Detect extends \app\core\WebserviceModel{
     public $detect_id;
     public $username;
     public $original_string;

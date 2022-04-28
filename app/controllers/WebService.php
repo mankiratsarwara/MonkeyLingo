@@ -19,6 +19,12 @@ class WebService extends \app\core\Controller
 		$request_body = json_decode($request_body, true);
 		$string = $request_body['string'];
 
+		// Creating a new Detect instance and setting the username, text to be detected and the time of detection.
+		$detect = new \app\models\Detect();
+		$detect->username = $request_body['username'];
+		$detect->original_string = $string;
+		$detect->detect_date = date('Y-m-d H:i:s');;
+
 		$curl = curl_init();
 		$string = urlencode($string);
 
@@ -48,8 +54,11 @@ class WebService extends \app\core\Controller
 		if ($err) {
 			echo "cURL Error #:" . $err;
 		} else {
-			$reponse = json_decode($response);
-			echo $reponse->data->detections[0][0]->language;
+			$response = json_decode($response);
+			$detect->detected_language = $response->data->detections[0][0]->language;
+			$detect->detect_completed_date = date('Y-m-d H:i:s');
+			$detect->insert();
+			echo $detect->detected_language;
 		}
 	}
 
@@ -62,6 +71,15 @@ class WebService extends \app\core\Controller
 		$string = $request_body['original_string'];
 		$sourceLanguage = $request_body['original_language'];
 		$targetLanguage = $request_body['converted_language'];
+
+		// Instantiating a Translate Object.
+		$translate = new \app\models\Translate();
+		$translate->username = $request_body['username'];
+		$translate->original_string = $string;
+		$translate->original_language = $sourceLanguage;
+		$translate->converted_language = $targetLanguage;
+		$translate->translate_date = date('Y-m-d H:i:s');
+
 
 		$curl = curl_init();
 		$string = urlencode($string);
@@ -92,8 +110,10 @@ class WebService extends \app\core\Controller
 			echo "cURL Error #:" . $err;
 		} else {
 			$response = json_decode($response, true);
-			// print_r($response);
-			echo $response['data']['translations'][0]['translatedText'];
+			// Inserting the translate data into the database.
+            $translate->converted_string = $response['data']['translations'][0]['translatedText'];
+            $translate->insert();
+			echo $translate->converted_string;
 		}
 	}
 

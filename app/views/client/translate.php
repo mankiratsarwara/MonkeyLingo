@@ -17,7 +17,7 @@
 <body style="background-image: linear-gradient(rgb(255 255 255 / 50%), rgb(0 0 0 / 50%)), url(\\media\/background.jpg); background-repeat: no-repeat; background-attachment: fixed; background-size: cover;">
 	<nav class="navbar navbar-light bg-light fixed-top">
 		<div class="container-fluid">
-			<a class="navbar-brand mx-auto" href="/webclient/translate" style="margin-left: 50px;"><img src="/media/monkey.png" style="height: 100px"></a></a>
+			<a class="navbar-brand mx-auto" href="/webclient/translate" style="margin-left: 50px;"><img src="<?php echo $data['image'] ?>" style="height: 100px"></a></a>
 			<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
 				<span class="navbar-toggler-icon"></span>
 			</button>

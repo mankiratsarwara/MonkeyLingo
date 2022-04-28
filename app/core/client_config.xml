@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<dbconnection>
+    <host>localhost</host>
+    <username>root</username>
+    <password></password>
+    <dbname>monkeylingo_client</dbname>
+</dbconnection>

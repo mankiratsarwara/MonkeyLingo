@@ -5,6 +5,8 @@ require dirname(dirname(__DIR__)).'\vendor\autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use GuzzleHttp\Client;
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 class WebClient extends \app\core\Controller
 {
@@ -16,7 +18,7 @@ class WebClient extends \app\core\Controller
 			$client = new \app\models\Client();
 
 			if (trim($_POST['password']) == '' || trim($_POST['username']) == '') {
-				$this->view('Client/login', 'Username and Password can not be empty!');
+				$this->view('Client/login', ['error'=>'Username and Password can not be empty!', 'image' => $this->getFromCDN()]);
 				return;
 			}
 
@@ -25,14 +27,15 @@ class WebClient extends \app\core\Controller
 			if ($client != false && password_verify($_POST['password'], $client->password_hash)) {
 				$_SESSION['username'] = $client->username;
 
-				$username = new \app\models\Client(); // why we do this lmao.
-				$username = $username->get($_SESSION['username']); // why we do this lmao pt.2
+				$username = new \app\models\Client();
+				$username = $username->get($_SESSION['username']);
+
 				header("Location:/WebClient/translate");
 			} else {
-				$this->view('Client/login', 'Wrong username and password combination!');
+				$this->view('Client/login', ['error' =>'Wrong username and password combination!', 'image' => $this->getFromCDN()]);
 			}
 		} else //1 present a form to the user
-			$this->view('Client/login');
+			$this->view('Client/login', ['image' => $this->getFromCDN()]);
 	}
 
     public function register()
@@ -42,18 +45,18 @@ class WebClient extends \app\core\Controller
 				trim($_POST['username']) == '' || trim($_POST['password']) == '' || trim($_POST['first_name']) == ''
 				|| trim($_POST['last_name']) == ''
 			) {
-				$this->view('Client/register', "Make sure that all fields are filled up!");
+				$this->view('Client/register',['error' => "Make sure that all fields are filled up!", 'image' => $this->getFromCDN()]);
 				return;
 			}
 
 			$client = new \app\models\Client();
 			
             if ($client->get($_POST['username'])) {
-				$this->view('Client/register', "This username already exists");
+				$this->view('Client/register', ['error' => "This username already exists", 'image' => $this->getFromCDN()]);
 				return;
 			}
 			if ($_POST['password'] != $_POST['password_confirm']) {
-				$this->view('Client/register', "The passwords do not match");
+				$this->view('Client/register', ['error' => "The passwords do not match", 'image' => $this->getFromCDN()]);
 				return;
 			}
 
@@ -66,13 +69,13 @@ class WebClient extends \app\core\Controller
 			$client->insert();
 			header("Location:/WebClient/login");
 		} else //1 present a form to the user
-			$this->view('Client/register');
+			$this->view('Client/register',['image' => $this->getFromCDN()]);
     }
 
     public function about(){
         $client = new \app\models\Client();
         $client = $client->get($_SESSION['username']);
-        $this->view('Client/about', ['client'=>$client]);
+        $this->view('Client/about', ['client'=>$client,'image' => $this->getFromCDN()]);
     }
 
     public function detect(){
@@ -81,19 +84,13 @@ class WebClient extends \app\core\Controller
         if(isset($_POST['action'])){
             // Checks if the user has entered an empty string in the text area.
             if(trim($_POST['string']) == ''){
-                $this->view('Client/detect', ['error' => 'The text area can not be empty!']);
+                $this->view('Client/detect', ['error' => 'The text area can not be empty!', 'image' => $this->getFromCDN()]);
                 return;
             }
 
             // Creating a Client instance and getting the client's info based on the username.
             $client = new \app\models\Client();
             $client = $client->get($_SESSION['username']);
-            
-            // Creating a new Detect instance and setting the username, text to be detected and the time of detection.
-            $detect = new \app\models\Detect();
-            $detect->username = $client->username;
-            $detect->original_string = $_POST['string'];
-            $detect->detect_date = date('Y-m-d H:i:s');
 
             // Authenticate the user.
             $this->sendAuthentication($client);
@@ -109,7 +106,7 @@ class WebClient extends \app\core\Controller
                 // POST Request Body to Web Service Detect.
                 $body = [
                     'username' => $client->username,
-                    'string' => $detect->original_string
+                    'string' => $_POST['string'],
                 ];
 
                 // JSON Encoding the body.
@@ -127,37 +124,27 @@ class WebClient extends \app\core\Controller
             }
             $languageName = $this->findLanguageCode($response->getBody()->getContents(), $languageResponse);
 
-            // Inserting the detected language into the database.
-            $detect->detected_language = $languageName;
-            $detect->detect_completed_date = date('Y-m-d H:i:s');
-            $detect->insert();
-
-            $this->view('Client/detect', ['client' => $client, 'language' => $languageName, "original" => $detect->original_string]);
+            $this->view('Client/detect', ['client' => $client, 'language' => $languageName, "original" => $_POST['string'], 'image' => $this->getFromCDN()]);
 
         }
         else{
             $client = new \app\models\Client();
             $client = $client->get($_SESSION['username']);
-            $this->view('Client/detect', ['client'=>$client]);
+            $this->view('Client/detect', ['client'=>$client,'image' => $this->getFromCDN()]);
         }
     }
 
     public function translate(){
+        $client = new \app\models\Client();
+        $client = $client->get($_SESSION['username']);
+
         if(isset($_POST['action'])){
             if(trim($_POST['string']) == ''){
-                $this->view('Client/translate', ['error' => 'The text area can not be empty!']);
+                // Getting the languages before the page loads
+                $languageResponse = $this->getLanguages($client);
+                $this->view('Client/translate', ['error' => 'The text area can not be empty!',"languages" => $languageResponse, 'image' => $this->getFromCDN()]);
                 return;
             }
-
-            $client = new \app\models\Client();
-            $client = $client->get($_SESSION['username']);
-            
-            $translate = new \app\models\Translate();
-            $translate->username = $client->username;
-            $translate->original_string = $_POST['string'];
-            $translate->original_language = $_POST['ogLanguage'];
-            $translate->converted_language = $_POST['convertedLanguage'];
-            $translate->translate_date = date('Y-m-d H:i:s');
 
             // Authenticate the user.
             $this->sendAuthentication($client);
@@ -173,9 +160,9 @@ class WebClient extends \app\core\Controller
                 // POST Request Body to Web Service Translate.
                 $body = [
                     'username' => $client->username,
-                    'original_string' => $translate->original_string,
-                    'original_language' => $translate->original_language,
-                    'converted_language' => $translate->converted_language
+                    'original_string' => $_POST['string'],
+                    'original_language' => $_POST['ogLanguage'],
+                    'converted_language' => $_POST['convertedLanguage']
                 ];
 
                 // JSON Encoding the body.
@@ -192,14 +179,9 @@ class WebClient extends \app\core\Controller
                 echo $response;
             }
 
-            // Inserting the translate data into the database.
-            $translate->converted_string = $response->getBody()->getContents();
-            $translate->insert();
-
-
-            $this->view('Client/translate', ['client' => $client, "languages" => $languageResponse, 'ogLanguage' => $translate->original_language,
-                "convertedLanguage" => $translate->converted_language, "original" => $translate->original_string,
-                "translated" => $translate->converted_string]);
+            $this->view('Client/translate', ['client' => $client, "languages" => $languageResponse, 'ogLanguage' => $_POST['ogLanguage'],
+                "convertedLanguage" => $_POST['convertedLanguage'], "original" => $_POST['string'],
+                "translated" => $response->getBody()->getContents(),'image' => $this->getFromCDN()]);
             
         }
         else{
@@ -207,7 +189,7 @@ class WebClient extends \app\core\Controller
             $client = $client->get($_SESSION['username']);
             // Getting the languages before the page loads
             $languageResponse = $this->getLanguages($client);
-            $this->view('Client/translate', ['client'=>$client, "languages" => $languageResponse]);
+            $this->view('Client/translate', ['client'=>$client, "languages" => $languageResponse, 'image' => $this->getFromCDN()]);
         }
     }
 
@@ -309,5 +291,29 @@ class WebClient extends \app\core\Controller
                 return $array[$i]["name"];
             }
         }
+    }
+
+    public function getFromCDN(){
+
+        $s3Client = new S3Client([
+            'region'  => 'us-east-1',
+            'version' => 'latest',
+            'credentials' => [
+                'key'    => "AKIAUTZKO3SNYPVE6ILQ",
+                'secret' => "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",
+            ]
+        ]);
+        
+        $cmd = $s3Client->getCommand('GetObject', [
+            'Bucket' => 'cnkbucket',
+            'Key'    => "monkey.png",
+        ]);
+        
+        $request = $s3Client->createPresignedRequest($cmd, '+20 minutes');
+        
+        // Get the actual presigned-url
+        $presignedUrl = (string)$request->getUri();
+        
+        return $presignedUrl;
     }
 }

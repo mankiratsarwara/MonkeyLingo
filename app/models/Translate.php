@@ -1,7 +1,7 @@
 <?php
 namespace app\models;
 
-class Translate extends \app\core\Model{
+class Translate extends \app\core\WebserviceModel{
     public $translate_id;
     public $username;
     public $original_string;

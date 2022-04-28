@@ -1,7 +1,7 @@
 <?php
 namespace app\models;
 
-class Client extends \app\core\Model{
+class Client extends \app\core\ClientModel{
     public $username;
     public $first_name;
 	public $last_name;

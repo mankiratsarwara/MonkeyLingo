@@ -20,8 +20,8 @@
 	<center>
 		<div class="login-register-box">
 			<?php
-			if ($data != null) {
-				echo "<div class=\"alert alert-danger\" role=\"alert\" style=\"width: 400px; height: 50px;\">$data</div>";
+			if (isset($data['error'])) {
+				echo "<div class=\"alert alert-danger\" role=\"alert\" style=\"width: 400px; height: 50px;\">{$data['error']}</div>";
 			} else {
 				// echo "<div class=\"alert alert-light\" role=\"alert\">Registration</div>";
 				echo "<br><br>";
@@ -29,7 +29,7 @@
 
 			?>
 			<div style="width: 500px;  border: 2px solid #241414;  padding: 50px;  margin: 20px; border-radius: 15px; background: #ffffff8c; box-shadow: 0px 0px 20px 8px #5c5c5c;">
-				<img style="width: 75px" src="\media/monkey.png" alt="Monkey">
+				<img style="width: 75px" src="<?php echo $data['image']; ?>" alt="Monkey">
 				<h3 style="margin-bottom: 30px">Registration</h3>
 				<form class="login-register-form" action='' method='post'>
 					<div style="width: fit-content;">
