@@ -76,76 +76,55 @@ class WebClient extends \app\core\Controller
     }
 
     public function detect(){
+
+        // Checks if the user clicks the detect button.
         if(isset($_POST['action'])){
+            // Checks if the user has entered an empty string in the text area.
             if(trim($_POST['string']) == ''){
                 $this->view('Client/detect', ['error' => 'The text area can not be empty!']);
                 return;
             }
 
+            // Creating a Client instance and getting the client's info based on the username.
             $client = new \app\models\Client();
             $client = $client->get($_SESSION['username']);
             
+            // Creating a new Detect instance and setting the username, text to be detected and the time of detection.
             $detect = new \app\models\Detect();
             $detect->username = $client->username;
             $detect->original_string = $_POST['string'];
             $detect->detect_data = date('Y-m-d H:i:s');
 
-            // Starting the authentication process.
-            $guzzleClient = new Client();
-            $response = "";
+            // Authenticate the user.
+            $this->sendAuthentication($client);
 
-            // Checking if client has a token.
-            if(!is_null($client->token)){
-                
-                // POST Request Authentication with the token.
-                $response = $guzzleClient->request('POST','http://localhost/AuthController/auth/',[
-                    'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->token]
-                ]);
-            }
-            else{
+            // Request to WebService to detect the text.
+            try{
 
-                // POST Request Authentication without the token.
-                $post = [
+                $guzzleClient = new Client();
+
+                // POST Request Body to Web Service Detect.
+                $body = [
                     'username' => $client->username,
-                    'license_number' => $client->license_number
-                    // 'api_key' => $client->api_key
+                    'string' => $detect->original_string
                 ];
-                // print_r($post);
-                $post = json_encode($post);
-                // echo strval($post) . "this is string";
-                $response;
-                try {
-                    $response = $guzzleClient->request('POST', 'http://localhost/AuthController/auth', [
-                        'headers' => ['content-type' => 'application/json'],
-                        'body' => $post,
-                    ]);
-                } catch (\GuzzleHttp\Exception\ClientException $e) {
-                    echo $response;
-                    echo $response->getHeader('HTTP/1.1');
-                    echo "Status code {$e->getResponse()->getStatusCode()} <br>";
-                    echo $response->getHeader('WWWW-Authenticate');
-                    $response = $e->getResponse();
-                    $response = $response->getBody()->getContents();
-                    echo $response;
-                }
-                // $jwt = $response->getHeader('wwww-authenticate');
-                // $jwt = str_replace('Bearer ', '', $jwt[0]);
-                // echo 'something' . $jwt;
-                // echo "aodsifjaosdifj????";
-                // // Getting the response headers.
-                // // print_r($response->getHeaders());
-                // print_r($jwt);
-                // echo $responseBodyAsString;
+
+                // JSON Encoding the body.
+                $body = json_encode($body);
+
+                $response = $guzzleClient->request('POST', 'http://localhost/WebService/detect', [
+                    'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->token],
+                    'body' => $body,
+                ]);
+
+            } catch(\GuzzleHttp\Exception\ClientException $e){ // Catching any exceptions.
+                echo "Status code {$e->getResponse()->getStatusCode()} <br>";
+                $response = $response->getBody()->getContents();
+                echo $response;
             }
 
-            // $res = json_decode($response->getBody()->getContents());
+            print_r($response->getBody()->getContents());
 
-            // $res = $response->getBody()->getContents();
-            // var_dump($res);
-
-            //$detect->detected_language = "hello";
-            //$detect->insert();
-            //$this->view('Client/detect',['client'=>$client, 'language'=>$detect->detected_language]);
         }
         else{
             $client = new \app\models\Client();
@@ -171,15 +150,38 @@ class WebClient extends \app\core\Controller
             $translate->converted_language = $_POST['convertedLanguage'];
             $translate->translate_date = date('Y-m-d H:i:s');
 
+            // Authenticate the user.
+            $this->sendAuthentication($client);
 
-            // REQUEST TO API CODE HERE.
+            // Request to WebService to detect the text.
+            try{
 
-            // $translate->converted_string = 'something';
-            // $translate->insert();
+                $guzzleClient = new Client();
 
-            $translate->converted_string = 'Cool car man, is that ferrarri?';
+                // POST Request Body to Web Service Translate.
+                $body = [
+                    'username' => $client->username,
+                    'original_string' => $translate->original_string,
+                    'original_language' => $translate->original_language,
+                    'converted_language' => $translate->converted_language
+                ];
 
-            $this->view('Client/translate',['client'=>$client, 'translated'=>$translate->converted_string]);
+                // JSON Encoding the body.
+                $body = json_encode($body);
+
+                $response = $guzzleClient->request('POST', 'http://localhost/WebService/translate', [
+                    'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->token],
+                    'body' => $body,
+                ]);
+
+            } catch(\GuzzleHttp\Exception\ClientException $e){ // Catching any exceptions.
+                echo "Status code {$e->getResponse()->getStatusCode()} <br>";
+                $response = $response->getBody()->getContents();
+                echo $response;
+            }
+
+            print_r($response->getBody()->getContents());
+            
         }
         else{
             $client = new \app\models\Client();
@@ -193,4 +195,54 @@ class WebClient extends \app\core\Controller
         header("Location:/WebClient/login");
     }
 
+    public function sendAuthentication($client){
+         
+        // Starting the authentication process.
+         $guzzleClient = new Client();
+         $response = "";
+
+         // Checking if client has a token.
+         if(!is_null($client->token)){
+             
+             // POST Request Authentication with the token.
+             $response = $guzzleClient->request('POST','http://localhost/AuthController/auth/',[
+                 'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->token]
+             ]);
+         }
+         else{
+
+            // POST Request Authentication Body (Without the token).
+            $post = [
+                'username' => $client->username,
+                'license_number' => $client->license_number
+            ];
+            
+            // JSON Encoding the Authentication Request Body.
+            $post = json_encode($post);
+            
+            // POST Request Authentication without the token. 
+            try {
+                $response = $guzzleClient->request('POST', 'http://localhost/AuthController/auth', [
+                    'headers' => ['content-type' => 'application/json','Authorization' => 'Bearer '.$client->api_key],
+                    'body' => $post,
+                ]);
+            } catch (\GuzzleHttp\Exception\ClientException $e) {
+                echo $response;
+                echo $response->getHeader('HTTP/1.1');
+                echo "Status code {$e->getResponse()->getStatusCode()} <br>";
+                echo $response->getHeader('WWWW-Authenticate');
+                $response = $e->getResponse();
+                $response = $response->getBody()->getContents();
+                echo $response;
+            }
+
+            // Extracting the token from the response.
+            $response = $response->getHeader('WWWW-Authenticate')[0];
+            $token = explode(' ', $response)[1];
+            
+            // Updating the client's token.
+            $client->token = $token;
+            $client->setToken();
+        }
+    }
 }

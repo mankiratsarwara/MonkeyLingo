@@ -32,7 +32,7 @@ class AuthController extends \app\core\Controller
         // Checking if client has sent the token or the API Key.
         if (!isset($request_body['license_number'])) {
             // Checking the token starts here.
-            $token = $elements[2];
+            $token = $elements[1];
 
             try {
                 // Decoding the token.
@@ -47,7 +47,7 @@ class AuthController extends \app\core\Controller
             }
         } else {
             // Checking the API Key and license number starts here.
-            $api_key = $elements[2];
+            $api_key = $elements[1];
 
             // Extracting the client's username.
             $username = $request_body['username'];
@@ -90,8 +90,7 @@ class AuthController extends \app\core\Controller
                         $jwt = JWT::encode($payload, $key, 'HS256');
                         http_response_code(200);
                         header('HTTP/1.1 200 OK');
-                        echo "HELLO";
-                        header("wwww-authenticate: Bearer $jwt");
+                        header("WWWW-Authenticate: Bearer $jwt");
                         header('content-type: application/json');
                     }
                 }
