@@ -6,6 +6,9 @@ require dirname(dirname(__DIR__)) . '\vendor\autoload.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
 
 /**
  *  @OA\Info(
@@ -61,6 +64,15 @@ class WebService //extends \app\core\Controller
 	 */
 	public static function detect()
 	{
+		// Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
 		// Getting the body of the request.
 		$request_body = file_get_contents("php://input");
 		header("content-type: application/json");
@@ -100,7 +112,7 @@ class WebService //extends \app\core\Controller
 		curl_close($curl);
 
 		if ($err) {
-			echo "cURL Error #:" . $err;
+			$logger->error("cURL Error #:" . $err);
 		} else {
 			$response = json_decode($response);
 			$detect->detected_language = $response->data->detections[0][0]->language;
@@ -164,6 +176,16 @@ class WebService //extends \app\core\Controller
 	 */
 	public function translate()
 	{
+
+		// Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
 		// Getting the body of the request.
 		$request_body = file_get_contents("php://input");
 		header("content-type: application/json");
@@ -207,7 +229,7 @@ class WebService //extends \app\core\Controller
 		curl_close($curl);
 
 		if ($err) {
-			echo "cURL Error #:" . $err;
+			$logger->error("cURL Error #:" . $err);
 		} else {
 			$response = json_decode($response, true);
 			// Inserting the translate data into the database.
@@ -254,6 +276,16 @@ class WebService //extends \app\core\Controller
 	 * )
 	 */
 	public function getLanguages() {
+
+		// Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
 		$curl = curl_init();
 
 		curl_setopt_array($curl, [
@@ -278,7 +310,7 @@ class WebService //extends \app\core\Controller
 		curl_close($curl);
 
 		if ($err) {
-			echo "cURL Error #:" . $err;
+			$logger->error("cURL Error #:" . $err);
 		} else {
 			echo $response;
 		}

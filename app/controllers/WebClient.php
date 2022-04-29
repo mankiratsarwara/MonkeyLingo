@@ -7,12 +7,24 @@ use Firebase\JWT\Key;
 use GuzzleHttp\Client;
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
 
 class WebClient extends \app\core\Controller
 {
 
 	public function login()
 	{
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
         //TODO: register session variables to stay logged in
 		if (isset($_POST['action'])) { //verify that the user clicked the submit button
 			$client = new \app\models\Client();
@@ -27,8 +39,10 @@ class WebClient extends \app\core\Controller
 			if ($client != false && password_verify($_POST['password'], $client->password_hash)) {
 				$_SESSION['username'] = $client->username;
 
-				$username = new \app\models\Client();
-				$username = $username->get($_SESSION['username']);
+				$user = new \app\models\Client();
+				$user = $user->get($_SESSION['username']);
+                
+                $logger->info('Client: '.$user->username.' logged in.');
 
 				header("Location:/WebClient/translate");
 			} else {
@@ -40,6 +54,15 @@ class WebClient extends \app\core\Controller
 
     public function register()
     {
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
         if (isset($_POST['action'])) { //verify that the user clicked the submit button
 			if (
 				trim($_POST['username']) == '' || trim($_POST['password']) == '' || trim($_POST['first_name']) == ''
@@ -67,6 +90,7 @@ class WebClient extends \app\core\Controller
             $client->license_number = uniqid(); // Generating a unique license number
 			$client->password = $_POST['password'];
 			$client->insert();
+            $logger->info('REGISTRATION: '.$client->username.' signed up.');
 			header("Location:/WebClient/login");
 		} else //1 present a form to the user
 			$this->view('Client/register',['image' => $this->getFromCDN()]);
@@ -80,6 +104,15 @@ class WebClient extends \app\core\Controller
 
     public function detect(){
 
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
         // Checks if the user clicks the detect button.
         if(isset($_POST['action'])){
             // Checks if the user has entered an empty string in the text area.
@@ -92,8 +125,14 @@ class WebClient extends \app\core\Controller
             $client = new \app\models\Client();
             $client = $client->get($_SESSION['username']);
 
+            $logger->warning('Client: '.$client->username.' has started authenticating.');
+
             // Authenticate the user.
             $this->sendAuthentication($client);
+
+            $logger->info('Client: '.$client->username.' is authenticated.');
+
+            $logger->warning('Client: '.$client->username.' has started detecting.');
 
             // Getting the languages before the page loads
             $languageResponse = $this->getLanguages($client);
@@ -120,9 +159,12 @@ class WebClient extends \app\core\Controller
             } catch(\GuzzleHttp\Exception\ClientException $e){ // Catching any exceptions.
                 echo "Status code {$e->getResponse()->getStatusCode()} <br>";
                 $response = $response->getBody()->getContents();
-                echo $response;
+                $response = json_decode($response);
+                $logger->error('Detect Error: '.$e->getResponse()->getStatusCode().' '.$response);
             }
             $languageName = $this->findLanguageCode($response->getBody()->getContents(), $languageResponse);
+
+            $logger->info('Client: '.$client->username.' has stopped detecting.');
 
             $this->view('Client/detect', ['client' => $client, 'language' => $languageName, "original" => $_POST['string'], 'image' => $this->getFromCDN()]);
 
@@ -135,6 +177,16 @@ class WebClient extends \app\core\Controller
     }
 
     public function translate(){
+
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
         $client = new \app\models\Client();
         $client = $client->get($_SESSION['username']);
 
@@ -146,11 +198,17 @@ class WebClient extends \app\core\Controller
                 return;
             }
 
+            $logger->warning('Client: '.$client->username.' has started authenticating.');
+
             // Authenticate the user.
             $this->sendAuthentication($client);
 
             // Getting the languages before the page loads
             $languageResponse = $this->getLanguages($client);
+
+            $logger->info('Client: '.$client->username.' is authenticated.');
+
+            $logger->warning('Client: '.$client->username.' has started translating.');
 
             // Request to WebService to translate the text.
             try{
@@ -176,8 +234,11 @@ class WebClient extends \app\core\Controller
             } catch(\GuzzleHttp\Exception\ClientException $e){ // Catching any exceptions.
                 echo "Status code {$e->getResponse()->getStatusCode()} <br>";
                 $response = $response->getBody()->getContents();
-                echo $response;
+                $response = json_decode($response);
+                $logger->error('Translate Error: '.$e->getResponse()->getStatusCode().' '.$response);
             }
+
+            $logger->info('Client: '.$client->username.' has stopped translating.');
 
             $this->view('Client/translate', ['client' => $client, "languages" => $languageResponse, 'ogLanguage' => $_POST['ogLanguage'],
                 "convertedLanguage" => $_POST['convertedLanguage'], "original" => $_POST['string'],
@@ -194,11 +255,29 @@ class WebClient extends \app\core\Controller
     }
 
     public function logout(){
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
+        $logger->info('Client: '.$_SESSION['username'].' has logged out.');
         session_destroy();
         header("Location:/WebClient/login");
     }
 
     public function sendAuthentication($client){
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
          
         // Starting the authentication process.
          $guzzleClient = new Client();
@@ -236,7 +315,8 @@ class WebClient extends \app\core\Controller
                 echo $response->getHeader('WWWW-Authenticate');
                 $response = $e->getResponse();
                 $response = $response->getBody()->getContents();
-                echo $response;
+                $response = json_decode($response);
+                $logger->error('Authentication Error: '.$e->getResponse()->getStatusCode().' '.$response);
             }
 
             // Extracting the token from the response.
@@ -251,6 +331,15 @@ class WebClient extends \app\core\Controller
 
     public function getLanguages($client)
     {
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__).'\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
         $response = "";
 
         // Creating a new Detect instance and setting the username, text to be detected and the time of detection.
@@ -276,7 +365,8 @@ class WebClient extends \app\core\Controller
         } catch (\GuzzleHttp\Exception\ClientException $e) { // Catching any exceptions.
             echo "Status code {$e->getResponse()->getStatusCode()} <br>";
             $response = $response->getBody()->getContents();
-            echo $response;
+            $response = json_decode($response);
+            $logger->error('API Error: '.$e->getResponse()->getStatusCode().' '.$response);
         }
         $response = $response->getBody()->getContents();
         $response = json_decode($response, true);

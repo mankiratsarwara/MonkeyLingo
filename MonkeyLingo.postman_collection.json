@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "e6d06bd4-8c0a-4bc7-b2e0-cb3813929941",
+		"name": "MonkeyLingo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Detect",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"John\",\r\n    \"string\": \"hello\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/WebService/detect",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"WebService",
+						"detect"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Translate",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"john\",\r\n    \"original_string\": \"hello\",\r\n    \"original_language\": \"en\",\r\n    \"converted_language\": \"fr\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/WebService/translate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"WebService",
+						"translate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetLanguages",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"john\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/WebService/getLanguages",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"WebService",
+						"getLanguages"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

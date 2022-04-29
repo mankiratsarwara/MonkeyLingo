@@ -36,6 +36,10 @@ class ComposerStaticInit570b947c9d85aa2ffee39b093652f5fb
         array (
             'OpenApi\\' => 8,
         ),
+        'M' => 
+        array (
+            'Monolog\\' => 8,
+        ),
         'J' => 
         array (
             'JmesPath\\' => 9,
@@ -98,6 +102,10 @@ class ComposerStaticInit570b947c9d85aa2ffee39b093652f5fb
         'OpenApi\\' => 
         array (
             0 => __DIR__ . '/..' . '/zircote/swagger-php/src',
+        ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
         'JmesPath\\' => 
         array (
