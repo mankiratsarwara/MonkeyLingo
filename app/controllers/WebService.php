@@ -7,10 +7,58 @@ require dirname(dirname(__DIR__)) . '\vendor\autoload.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-
-class WebService extends \app\core\Controller
+/**
+ *  @OA\Info(
+ * 	version="1.0.0",
+ * 	title="Web Service",
+ * 	description="The Web Service makes calls to the Google API and returns the results depending on the request.",
+ * )
+ * 
+ */
+class WebService //extends \app\core\Controller
 {
 
+	/**
+	 * @OA\POST(
+	 * 	path="/webservice/detect",
+	 * 	tags={"Web Service"},
+	 * 	summary="Detects the language of the text.",
+	 * 	@OA\RequestBody(
+	 * 		required=true,
+	 * 		@OA\MediaType(
+	 * 			mediaType="application/json",
+	 * 			@OA\Schema(
+	 * 				type="object",
+	 * 				@OA\Property(
+	 * 					property="String",
+	 * 					type="string",
+	 * 					description="The text to be analyzed.",
+	 * 				),
+	 * )
+	 * )),
+	 * 	@OA\Response(
+	 * 		response="200",
+	 * 		description="Successful operation.",
+	 * 		@OA\JsonContent(
+	 * 			type="object",
+	 * 			@OA\Property(
+	 * 				property="language",
+	 * 				type="string",
+	 * 				description="The detected language.",
+	 * 			),
+	 * )),
+	 * 	@OA\Response(
+	 * 		response="400",
+	 * 		description="Invalid request.",
+	 * 		@OA\JsonContent(
+	 * 			type="object",
+	 * 			@OA\Property(
+	 * 				property="error",
+	 * 				type="string",
+	 * 				description="The error message.",
+	 * 			)))
+	 * )
+	 */
 	public static function detect()
 	{
 		// Getting the body of the request.
@@ -62,6 +110,58 @@ class WebService extends \app\core\Controller
 		}
 	}
 
+
+	/**
+	 * @OA\POST(
+	 * 	path="/webservice/translate",
+	 * 	tags={"Web Service"},
+	 * 	summary="Translates the text to the specified language.",
+	 * 	@OA\RequestBody(
+	 * 		required=true,
+	 * 		@OA\MediaType(
+	 * 			mediaType="application/json",
+	 * 			@OA\Schema(
+	 * 				type="object",
+	 * 				@OA\Property(
+	 * 					property="String",
+	 * 					type="string",
+	 * 					description="The text to be translated.",
+	 * 				),
+	 * 				@OA\Property(
+	 * 					property="TargetLanguage",
+	 * 					type="string",
+	 * 					description="The language to translate the text to.",
+	 * 				),
+	 * 				@OA\Property(
+	 * 					property="SourceLanguage",
+	 * 					type="string",
+	 * 					description="The language of the text.",
+	 * 				),
+	 * 			)
+	 * )),
+	 * 	@OA\Response(
+	 * 		response="200",
+	 * 		description="Successful operation.",
+	 * 		@OA\JsonContent(
+	 * 			type="object",
+	 * 			@OA\Property(
+	 * 				property="translated_string",
+	 * 				type="string",
+	 * 				description="The translated string.",
+	 * 			),
+	 * )),
+	 * 	@OA\Response(
+	 * 		response="400",
+	 * 		description="Invalid request.",
+	 * 		@OA\JsonContent(
+	 * 			type="object",
+	 * 			@OA\Property(
+	 * 				property="error",
+	 * 				type="string",
+	 * 				description="The error message.",
+	 * 			)))
+	 * )
+	 */
 	public function translate()
 	{
 		// Getting the body of the request.
@@ -117,6 +217,42 @@ class WebService extends \app\core\Controller
 		}
 	}
 
+	/**
+	 * @OA\GET(
+	 * 	path="/webservice/getLanguages",
+	 * 	tags={"Web Service"},
+	 * 	summary="Gets the list of languages supported by the Google Translate API.",
+	 * 	@OA\Response(
+	 * 		response="200",
+	 * 		description="Successful operation.",
+	 * 		@OA\JsonContent(
+	 * 			type="object",
+	 * 			@OA\Property(
+	 * 				property="languages",
+	 * 				type="array",
+	 * 				description="The list of languages.",
+	 * 				@OA\Items(
+	 * 					type="object",
+	 * 					@OA\Property(
+	 * 						property="language",
+	 * 						type="string",
+	 * 						description="The language code.",
+	 * 					),
+	 * )),
+	 * 				),
+	 * )),
+	 * 	@OA\Response(
+	 * 		response="400",
+	 * 		description="Invalid request.",
+	 * 		@OA\JsonContent(
+	 * 			type="object",
+	 * 			@OA\Property(
+	 * 				property="error",
+	 * 				type="string",
+	 * 				description="The error message.",
+	 * 			)))
+	 * )
+	 */
 	public function getLanguages() {
 		$curl = curl_init();
 

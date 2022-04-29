@@ -1,0 +1,105 @@
+openapi: 3.0.0
+info:
+  title: 'Web Service'
+  description: 'The Web Service makes calls to the Google API and returns the results depending on the request.'
+  version: 1.0.0
+paths:
+  /webservice/detect:
+    post:
+      tags:
+        - 'Web Service'
+      summary: 'Detects the language of the text.'
+      operationId: 698f53a1e2e5c5b3d4c4b61cef0602c2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                String:
+                  description: 'The text to be analyzed.'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: 'Successful operation.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  language: { description: 'The detected language.', type: string }
+                type: object
+        '400':
+          description: 'Invalid request.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error: { description: 'The error message.', type: string }
+                type: object
+  /webservice/translate:
+    post:
+      tags:
+        - 'Web Service'
+      summary: 'Translates the text to the specified language.'
+      operationId: 4404c29803044139ab705be154fc4813
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                String:
+                  description: 'The text to be translated.'
+                  type: string
+                TargetLanguage:
+                  description: 'The language to translate the text to.'
+                  type: string
+                SourceLanguage:
+                  description: 'The language of the text.'
+                  type: string
+              type: object
+      responses:
+        '200':
+          description: 'Successful operation.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  translated_string: { description: 'The translated string.', type: string }
+                type: object
+        '400':
+          description: 'Invalid request.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  error: { description: 'The error message.', type: string }
+                type: object
+  /webservice/getLanguages:
+    get:
+      tags:
+        - 'Web Service'
+      summary: 'Gets the list of languages supported by the Google Translate API.'
+      operationId: 472d9d67e4d20d527011de96d752c6e7
+      responses:
+        '200':
+          description: 'Successful operation.'
+          content:
+            application/json:
+              schema:
+                properties:
+                  languages: { description: 'The list of languages.', type: array, items: { properties: { language: { description: 'The language code.', type: string } }, type: object } }
+                type: object
+components:
+  responses:
+    '400':
+      description: 'Invalid request.'
+      content:
+        application/json:
+          schema:
+            properties:
+              error:
+                description: 'The error message.'
+                type: string
+            type: object
