@@ -6,6 +6,9 @@ require dirname(dirname(__DIR__)) . '\vendor\autoload.php';
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
 
 /**
  * 
@@ -15,6 +18,15 @@ class AuthController extends \app\core\Controller
 
     public function auth()
     {
+        // Creating some log handlers.
+        $stream = new StreamHandler(dirname(__DIR__) . '\monkeylingo.log', Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        // Creating the main logger.
+        $logger = new Logger('monkeylingo');
+        $logger->pushHandler($stream);
+        $logger->pushHandler($firephp);
+
         // Getting all the headers from the request.
         $headers = apache_request_headers();
 
@@ -42,11 +54,13 @@ class AuthController extends \app\core\Controller
                 $token = JWT::decode($token, new Key("key", 'HS256'));
 
                 // Response
-                echo "HTTP/1.1 200 OK";
+                http_response_code(200);
             } catch (\Exception $e) {
                 // If the token is invalid, return an error.
-                echo $e;
-                echo "HTTP/1.1 401 INVALID TOKEN.";
+                http_response_code(401);
+                echo json_encode(['error' => "Invalid Token"]);
+                $logger->error("HTTP/1.1 401 INVALID TOKEN #:" . $e);
+                return;
             }
         } else {
             // Checking the API Key and license number starts here.
@@ -64,19 +78,31 @@ class AuthController extends \app\core\Controller
 
             // Checking if client exists.
             if ($client == null) {
-                echo "HTTP/1.1 404 CLIENT DOES NOT EXIST.";
+                // header("HTTP/1.1: 404 CLIENT DOES NOT EXIST.");
+                http_response_code(404);
+                echo json_encode(['error' => "Client does not exist."]);
+                $logger->error("HTTP/1.1 404 CLIENT DOES NOT EXIST.");
             } else {
                 // Checking if API key corresponds to the client.
                 if ($api_key != $client->api_key) {
-                    echo "HTTP/1.1 401 INVALID API KEY.";
+                    http_response_code(401);
+                    echo json_encode(['error' => "Invalid API Key"]);
+                    $logger->error("HTTP/1.1: 401 INVALID API KEY.");
                 } else {
                     // Checking if license corresponds to the client.
                     if ($license_number != $client->license_number) {
-                        echo "HTTP/1.1 401 INVALID LICENSE NUMBER.";
+                        // header("HTTP/1.1: 401 INVALID LICENSE NUMBER.");
+                        http_response_code(401);
+                        echo json_encode(['error' => "Invalid License Number"]);
+                        $logger->error("HTTP/1.1 401 INVALID LICENSE NUMBER.");
                     }
                     // Checking if license is expired.
                     else if (date('Y-m-d H:i:s a', time()) > $client->license_end_date) {
-                        echo "HTTP/1.1 401 EXPIRED LICENSE.";
+                        // echo "hello";
+                        // header("HTTP/1.1: 401 EXPIRED LICENSE");
+                        http_response_code(401);
+                        echo json_encode(['error' => "Expired License"]);
+                        $logger->error("HTTP/1.1 401 EXPIRED LICENSE.");
                     } else {
                         // All checks are done.
                         // Generating a token to be sent back.
@@ -91,10 +117,10 @@ class AuthController extends \app\core\Controller
                             "exp" => $exp
                         ];
                         $jwt = JWT::encode($payload, $key, 'HS256');
-                        http_response_code(200);
-                        header('HTTP/1.1 200 OK');
+                        // header('HTTP/1.1: 200 OK');
                         header("WWWW-Authenticate: Bearer $jwt");
                         header('content-type: application/json');
+                        http_response_code(200);
                     }
                 }
             }
